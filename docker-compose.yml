@@ -1,0 +1,115 @@
+services:
+  db:
+    image: mysql:8.0.33
+    container_name: db
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root!
+      TZ: UTC
+      MYSQL_DATABASE: source
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+    volumes:
+      - ./docker-volume/mysql:/var/lib/mysql
+    networks:
+      - pipeline
+
+  connect:
+    image: debezium/connect:2.6
+    container_name: connect
+    ports:
+      - "8083:8083"
+    depends_on:
+      - db
+      - broker-00
+      - broker-01
+      - broker-02
+    environment:
+      - BOOTSTRAP_SERVERS=broker-00:19092,broker-01:19093,broker-02:19094
+      - GROUP_ID=connect-00
+      - CONFIG_STORAGE_TOPIC=CONNECT_CONFIGS
+      - OFFSET_STORAGE_TOPIC=CONNECT_OFFSETS
+      - STATUS_STORAGE_TOPIC=CONNECT_STATUSES
+    networks:
+      - pipeline
+
+  broker-00:
+    image: apache/kafka:3.7.0
+    container_name: broker-00
+    ports:
+      - "9092:9092"
+    volumes:
+      - ./docker-volume/kafka/secrets:/etc/kafka/secrets
+      - ./docker-volume/kafka/config:/mnt/shared/config
+    environment:
+      CLUSTER_ID: "event-broker"
+      KAFKA_NODE_ID: 1
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@broker-00:29092,2@broker-01:29093,3@broker-02:29094"
+      KAFKA_LISTENERS: "PLAINTEXT://:19092,CONTROLLER://:29092,EXTERNAL://:9092"
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://broker-00:19092,EXTERNAL://localhost:9092"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT'
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+    networks:
+      - pipeline
+
+  broker-01:
+    image: apache/kafka:3.7.0
+    container_name: broker-01
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./docker-volume/kafka/secrets:/etc/kafka/secrets
+      - ./docker-volume/kafka/config:/mnt/shared/config
+    environment:
+      CLUSTER_ID: "event-broker"
+      KAFKA_NODE_ID: 2
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@broker-00:29092,2@broker-01:29093,3@broker-02:29094"
+      KAFKA_LISTENERS: "PLAINTEXT://:19093,CONTROLLER://:29093,EXTERNAL://:9093"
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://broker-01:19093,EXTERNAL://localhost:9093"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT'
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+    networks:
+      - pipeline
+
+  broker-02:
+    image: apache/kafka:3.7.0
+    container_name: broker-02
+    ports:
+      - "9094:9094"
+    volumes:
+      - ./docker-volume/kafka/secrets:/etc/kafka/secrets
+      - ./docker-volume/kafka/config:/mnt/shared/config
+    environment:
+      CLUSTER_ID: "event-broker"
+      KAFKA_NODE_ID: 3
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@broker-00:29092,2@broker-01:29093,3@broker-02:29094"
+      KAFKA_LISTENERS: "PLAINTEXT://:19094,CONTROLLER://:29094,EXTERNAL://:9094"
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://broker-02:19094,EXTERNAL://localhost:9094"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT'
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+    networks:
+      - pipeline
+
+  monitor:
+    image: provectuslabs/kafka-ui:latest
+    container_name: monitor
+    depends_on:
+      - broker-00
+      - broker-01
+      - broker-02
+    ports:
+      - "9090:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: pipeline-cluster-00
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: broker-00:19092,broker-01:19093,broker-02:19094
+    networks:
+      - pipeline
+
+networks:
+  pipeline:
+    driver: bridge
