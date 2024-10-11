@@ -118,6 +118,8 @@ services:
       - node.name=single-node
       - cluster.name=sink-es-cluster
       - discovery.type=single-node
+      - xpack.security.enabled=false
+      - xpack.security.enrollment.enabled=false
     ports:
       - "9200:9200"
       - "9300:9300"
