@@ -11,6 +11,8 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
 @Component
@@ -19,6 +21,7 @@ public class StoreESConsumer {
 
     private final ObjectMapper objectMapper;
     private final LogRepository logRepository;
+    private final java.time.format.DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").withZone(ZoneId.of("UTC"));
 
     @KafkaListener(topics = "source.source.log")
     public void consume(@Payload ConsumerRecord<String, String> data) {
@@ -26,17 +29,19 @@ public class StoreESConsumer {
             Map<String, Map<String, Object>> map = objectMapper.readValue(data.value(), new TypeReference<>() {});
             Map<String, Object> payload = map.get("payload");
 
-            Log log = buildLog(payload);
+            // TODO: convert object to Log.class gracefully
+            Map<String, String> after = (Map<String, String>) payload.get("after");
+            Log log = buildLog(after);
             logRepository.save(log);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    private Log buildLog(Map<String, Object> payload) {
+    private Log buildLog(Map<String, String> data) {
         return Log.builder()
-                .summary((String) payload.get("summary"))
-                .createdAt(LocalDateTime.now())
+                .summary(data.get("summary"))
+                .createdAt(LocalDateTime.parse(data.get("createdAt"), formatter))
                 .build();
     }
 }
