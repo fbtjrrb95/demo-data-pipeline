@@ -1,11 +1,12 @@
-package me.skrew.data.consumer;
+package me.skrew.data;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-@org.springframework.context.annotation.Configuration
-public class Configuration {
+@Configuration
+public class AppConfiguration {
 
     @Bean
     public ObjectMapper objectMapper() {
