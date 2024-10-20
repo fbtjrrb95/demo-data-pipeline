@@ -21,15 +21,15 @@ public class StoreESConsumer {
 
     private final ObjectMapper objectMapper;
     private final LogRepository logRepository;
-    private final java.time.format.DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").withZone(ZoneId.of("UTC"));
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").withZone(ZoneId.of("UTC"));
 
+    @SuppressWarnings("unchecked")
     @KafkaListener(topics = "source.source.log")
     public void consume(@Payload ConsumerRecord<String, String> data) {
         try {
             Map<String, Map<String, Object>> map = objectMapper.readValue(data.value(), new TypeReference<>() {});
             Map<String, Object> payload = map.get("payload");
 
-            // TODO: convert object to Log.class gracefully
             Map<String, String> after = (Map<String, String>) payload.get("after");
             Log log = buildLog(after);
             logRepository.save(log);
