@@ -36,5 +36,5 @@ out/
 ### VS Code ###
 .vscode/
 
-init/db/
-init/kafka-connect/
+### Kafka
+docker-volume/

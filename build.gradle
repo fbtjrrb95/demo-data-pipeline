@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'me.skrew.data'
-version = '0.0.1-SNAPSHOT'
+version = '0.0.1'
 
 java {
     toolchain {
@@ -19,8 +19,14 @@ repositories {
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework.kafka:spring-kafka'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.18.0'
+    implementation 'org.springframework.data:spring-data-elasticsearch:5.3.3'
+    compileOnly 'org.projectlombok:lombok:1.18.34'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    annotationProcessor 'org.projectlombok:lombok:1.18.34'
 }
 
 tasks.named('test') {
