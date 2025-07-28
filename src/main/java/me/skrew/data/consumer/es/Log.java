@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 public class Log {
 
     @Id
-    private Long id;
+    private String id;
     private String summary;
     private LocalDateTime createdAt;
 
