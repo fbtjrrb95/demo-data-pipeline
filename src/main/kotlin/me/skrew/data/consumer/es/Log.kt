@@ -1,18 +1,14 @@
-package me.skrew.data.consumer.es;
+package me.skrew.data.consumer.es
 
-import lombok.Builder;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.elasticsearch.annotations.Document;
-
-import java.time.LocalDateTime;
+import org.springframework.data.annotation.Id
+import org.springframework.data.elasticsearch.annotations.Document
+import java.time.LocalDateTime
 
 @Document(indexName = "logs")
-@Builder
-public class Log {
-
+class Log(
+    private val summary: String? = null,
+    private val createdAt: LocalDateTime? = null
+) {
     @Id
-    private String id;
-    private String summary;
-    private LocalDateTime createdAt;
-
+    private val id: String? = null
 }

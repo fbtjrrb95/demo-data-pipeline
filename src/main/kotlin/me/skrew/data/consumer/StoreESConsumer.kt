@@ -1,47 +1,43 @@
-package me.skrew.data.consumer;
+package me.skrew.data.consumer
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
-import me.skrew.data.consumer.es.Log;
-import me.skrew.data.consumer.es.LogRepository;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.stereotype.Component;
+import com.fasterxml.jackson.core.type.TypeReference
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import me.skrew.data.consumer.es.Log
+import me.skrew.data.consumer.es.LogRepository
+import org.apache.kafka.clients.consumer.ConsumerRecord
+import org.springframework.kafka.annotation.KafkaListener
+import org.springframework.messaging.handler.annotation.Payload
+import org.springframework.stereotype.Component
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.Map;
 
 @Component
-@RequiredArgsConstructor
-public class StoreESConsumer {
+class StoreESConsumer(
 
-    private final ObjectMapper objectMapper;
-    private final LogRepository logRepository;
-    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").withZone(ZoneId.of("UTC"));
+    private val logRepository: LogRepository,
+) {
+    val objectMapper = jacksonObjectMapper()
+    private val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").withZone(ZoneId.of("UTC"))
 
-    @SuppressWarnings("unchecked")
-    @KafkaListener(topics = "source.source.log")
-    public void consume(@Payload ConsumerRecord<String, String> data) {
+    @KafkaListener(topics = ["source.source.log"])
+    fun consume(@Payload data: ConsumerRecord<String?, String?>) {
         try {
-            Map<String, Map<String, Object>> map = objectMapper.readValue(data.value(), new TypeReference<>() {});
-            Map<String, Object> payload = map.get("payload");
-
-            Map<String, String> after = (Map<String, String>) payload.get("after");
-            Log log = buildLog(after);
-            logRepository.save(log);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+            val map: Map<String, Map<String, Any>> = objectMapper.readValue(data.value(), object : TypeReference<Map<String, Map<String, Any>>>() {})
+            val payload = map["payload"]!!
+            val after = payload["after"] as Map<String, String>?
+            val log = buildLog(after!!)
+            logRepository.save<Log>(log)
+        } catch (e: java.lang.Exception) {
+            throw java.lang.RuntimeException(e)
         }
     }
 
-    private Log buildLog(Map<String, String> data) {
-        return Log.builder()
-                .summary(data.get("summary"))
-                .createdAt(LocalDateTime.parse(data.get("createdAt"), formatter))
-                .build();
+    private fun buildLog(data: Map<String, String>): Log {
+        return Log(
+            summary = data["summary"],
+            createdAt = LocalDateTime.parse(data["createdAt"], formatter),
+        )
     }
 }
