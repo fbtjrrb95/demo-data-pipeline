@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import me.skrew.data.consumer.es.Log
 import me.skrew.data.consumer.es.LogRepository
+import mu.KotlinLogging
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.messaging.handler.annotation.Payload
@@ -19,6 +20,8 @@ class StoreESConsumer(
     private val logRepository: LogRepository,
 ) {
     val objectMapper = jacksonObjectMapper()
+    private val logger = KotlinLogging.logger {}
+
     private val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").withZone(ZoneId.of("UTC"))
 
     @KafkaListener(topics = ["source.source.log"])
@@ -28,6 +31,7 @@ class StoreESConsumer(
             val payload = map["payload"]!!
             val after = payload["after"] as Map<String, String>?
             val log = buildLog(after!!)
+            logger.info { "received data$log" }
             logRepository.save<Log>(log)
         } catch (e: java.lang.Exception) {
             throw java.lang.RuntimeException(e)
