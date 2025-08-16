@@ -19,7 +19,7 @@ class StoreESConsumer(
 
     private val logRepository: LogRepository,
 ) {
-    val objectMapper = jacksonObjectMapper()
+    private val objectMapper = jacksonObjectMapper()
     private val logger = KotlinLogging.logger {}
 
     private val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").withZone(ZoneId.of("UTC"))
