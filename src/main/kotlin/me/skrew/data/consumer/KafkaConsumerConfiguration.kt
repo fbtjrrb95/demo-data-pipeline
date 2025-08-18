@@ -12,12 +12,12 @@ import org.springframework.kafka.core.DefaultKafkaConsumerFactory
 
 @EnableKafka
 @Configuration
-open class KafkaConsumerConfiguration {
+class KafkaConsumerConfiguration {
     @Value("\${kafka.bootstrap_servers}")
     private val bootstrapServers: String? = null
 
     @Bean
-    open fun consumerFactory(): ConsumerFactory<String, Any> {
+    fun consumerFactory(): ConsumerFactory<String, Any> {
         val config: MutableMap<String, Any?> = HashMap()
         config[ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG] = bootstrapServers
         config[ConsumerConfig.GROUP_ID_CONFIG] = "store-es"
@@ -27,7 +27,7 @@ open class KafkaConsumerConfiguration {
     }
 
     @Bean
-    open fun kafkaListenerContainerFactory(): ConcurrentKafkaListenerContainerFactory<String, Any> {
+    fun kafkaListenerContainerFactory(): ConcurrentKafkaListenerContainerFactory<String, Any> {
         val factory = ConcurrentKafkaListenerContainerFactory<String, Any>()
         factory.consumerFactory = consumerFactory()
         return factory
