@@ -12,17 +12,18 @@ import org.springframework.kafka.core.DefaultKafkaConsumerFactory
 
 @EnableKafka
 @Configuration
-class KafkaConsumerConfiguration {
-    @Value("\${kafka.bootstrap_servers}")
-    private val bootstrapServers: String? = null
-
+class KafkaConsumerConfiguration(
+    @Value("\${kafka.bootstrap-servers}")
+    private val bootstrapServers: String
+) {
     @Bean
     fun consumerFactory(): ConsumerFactory<String, Any> {
-        val config: MutableMap<String, Any?> = HashMap()
-        config[ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG] = bootstrapServers
-        config[ConsumerConfig.GROUP_ID_CONFIG] = "store-es"
-        config[ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG] = StringDeserializer::class.java
-        config[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] = StringDeserializer::class.java
+        val config: Map<String, Any> = mapOf(
+            ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG to bootstrapServers,
+            ConsumerConfig.GROUP_ID_CONFIG to "store-es",
+            ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java,
+            ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java,
+        )
         return DefaultKafkaConsumerFactory(config)
     }
 
