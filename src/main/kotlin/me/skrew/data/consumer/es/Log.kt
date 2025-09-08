@@ -6,8 +6,8 @@ import java.time.LocalDateTime
 
 @Document(indexName = "logs")
 class Log(
-    private val summary: String? = null,
-    private val createdAt: LocalDateTime? = null
+    private val summary: String,
+    private val createdAt: LocalDateTime
 ) {
     @Id
     private val id: String? = null

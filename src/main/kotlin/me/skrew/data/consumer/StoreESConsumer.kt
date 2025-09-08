@@ -32,7 +32,7 @@ class StoreESConsumer(
             val after = payload["after"] as Map<String, String>?
             val log = buildLog(after!!)
             logger.info { "received data$log" }
-            logRepository.save<Log>(log)
+            logRepository.save(log)
         } catch (e: java.lang.Exception) {
             throw java.lang.RuntimeException(e)
         }
@@ -40,7 +40,7 @@ class StoreESConsumer(
 
     private fun buildLog(data: Map<String, String>): Log {
         return Log(
-            summary = data["summary"],
+            summary = data["summary"]!!,
             createdAt = LocalDateTime.parse(data["createdAt"], formatter),
         )
     }

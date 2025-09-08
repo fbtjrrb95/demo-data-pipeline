@@ -12,7 +12,7 @@ import org.springframework.data.elasticsearch.repository.config.EnableElasticsea
 
 @Configuration
 @EnableElasticsearchRepositories
-open class ElasticSearchConfiguration {
+class ElasticSearchConfiguration {
     @Value("\${elasticsearch.hostname}")
     private val hostname: String? = null
 

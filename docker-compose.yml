@@ -139,7 +139,6 @@ services:
     networks:
       - es-bridge
 
-
 networks:
   pipeline:
     driver: bridge
