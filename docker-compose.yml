@@ -32,9 +32,38 @@ services:
       - CONFIG_STORAGE_TOPIC=CONNECT_CONFIGS
       - OFFSET_STORAGE_TOPIC=CONNECT_OFFSETS
       - STATUS_STORAGE_TOPIC=CONNECT_STATUSES
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -sf http://localhost:8083/connectors > /dev/null" ]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 15s
     networks:
       - pipeline
       - es-bridge
+
+  connect-init:
+    image: curlimages/curl:8.10.1
+    container_name: connect-init
+    depends_on:
+      connect:
+        condition: service_healthy
+    command: >
+      sh -lc '
+        echo "Waiting a bit for connector plugins to load...";
+        sleep 3;
+        echo "Registering connector";
+        curl -fsS -X POST http://connect:8083/connectors \
+             -H "Content-Type: application/json" \
+             --data-binary @/configs/config.json \
+             -v;
+        echo "Done.";
+      '
+    volumes:
+      - ./docker-volume/connectors:/configs:ro
+    restart: "no"
+    networks:
+      - pipeline
 
   broker-00:
     image: apache/kafka:3.7.0
