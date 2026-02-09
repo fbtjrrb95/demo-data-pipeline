@@ -29,8 +29,9 @@ dependencies {
 
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.kafka:spring-kafka")
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.18.0")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.18.0")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
+    implementation("com.fasterxml.jackson.core:jackson-databind")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.springframework.data:spring-data-elasticsearch:5.3.3")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
